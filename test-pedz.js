@@ -1,10 +1,10 @@
 const fs = require('fs');
-eval(fs.readFileSync('modules/bsa.js', 'utf8'));
-eval(fs.readFileSync('modules/pedz-bsa.js', 'utf8'));
-eval(fs.readFileSync('modules/pedz-zscore.js', 'utf8'));
+eval(fs.readFileSync('bsa.js', 'utf8'));
+eval(fs.readFileSync('pedz-bsa.js', 'utf8'));
+eval(fs.readFileSync('pedz-zscore.js', 'utf8'));
 window = { lang: { convert: function(s) { return s; } } };
-eval(fs.readFileSync('modules/pedz-common.js', 'utf8'));
-eval(fs.readFileSync('modules/pedz-mmode.js', 'utf8'));
+eval(fs.readFileSync('pedz-common.js', 'utf8'));
+eval(fs.readFileSync('pedz-mmode.js', 'utf8'));
 
 try {
   let obj = new peterssenMpa(1.0, 15, 100);

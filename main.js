@@ -473,7 +473,7 @@ function renderDiseaseCard(disease, weight) {
                     <strong>Notes</strong>
                     <p>Use this card as a placeholder for your institution-specific disease details, treatment plan, and post-op pathway.</p>
                     <strong>Extensibility</strong>
-                    <p>You can add more fields to modules/diseases.js later without changing the output layout.</p>
+                    <p>You can add more fields to diseases.js later without changing the output layout.</p>
                 </div>
             </div>
         </div>
