@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description"
+        content="Perfusion Pro Suite clinical decision support calculators for pediatric perfusion planning.">
+    <title>Perfusion Pro Suite |Zafeer Ul Islam</title>
+    <!-- PWA & Mobile App Offline Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Perfusion Pro">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=6.0">
+    <style>
+        /* ── Core Hub & Modal Critical Styles (Cache-Safe) ───────────────── */
+        .hub-container {
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto var(--spacing-xl);
+            padding: 0 4px;
+        }
+
+        .hub-patient-bar {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 5px solid #ef4444 !important;
+            border-radius: 14px !important;
+            padding: 16px 22px !important;
+            margin-bottom: 28px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 16px !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+            flex-wrap: wrap !important;
+        }
+
+        .patient-bar-info {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            font-size: 0.95rem !important;
+            color: #475569 !important;
+            flex-wrap: wrap !important;
+        }
+
+        .patient-bar-dot {
+            width: 10px !important;
+            height: 10px !important;
+            border-radius: 50% !important;
+            background: #ef4444 !important;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5) !important;
+            animation: pulse 2s infinite !important;
+        }
+
+        .patient-bar-label {
+            font-family: 'Sora', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            color: #0f172a !important;
+        }
+
+        .patient-bar-values {
+            font-family: 'IBM Plex Sans', sans-serif !important;
+            font-size: 0.95rem !important;
+            color: #1e293b !important;
+        }
+
+        .patient-bar-values strong {
+            color: #b91c1c !important;
+            font-family: 'IBM Plex Mono', monospace !important;
+            font-weight: 700 !important;
+            background: #fef2f2 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            border: 1px solid #fee2e2 !important;
+        }
+
+        .patient-bar-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .patient-bar-btn {
+            background: #fff1f2 !important;
+            border: 1.5px solid #fecaca !important;
+            color: #b91c1c !important;
+            font-family: 'IBM Plex Sans', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 0.88rem !important;
+            padding: 10px 18px !important;
+            min-height: 44px !important;
+            border-radius: 10px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .patient-bar-btn:hover {
+            background: #fee2e2 !important;
+            border-color: #f87171 !important;
+            color: #991b1b !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .patient-bar-btn-reset {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #64748b !important;
+            font-family: 'IBM Plex Sans', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            padding: 10px 16px !important;
+            min-height: 44px !important;
+            border-radius: 10px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .patient-bar-btn-reset:hover {
+            background: #fee2e2 !important;
+            border-color: #fca5a5 !important;
+            color: #b91c1c !important;
+        }
+
+        /* ── 4-Card Responsive Grid ────────────────────────────── */
+        .apps-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 24px !important;
+        }
+
+        @media (max-width: 820px) {
+            .apps-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .app-card {
+            background: #ffffff !important;
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 18px !important;
+            padding: 28px 24px 24px !important;
+            cursor: pointer !important;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.2s ease,
+                box-shadow 0.2s ease !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
+            position: relative !important;
+            user-select: none !important;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px) !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 16px 32px -6px rgba(239, 68, 68, 0.14), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .app-card:active {
+            transform: translateY(-1px) !important;
+        }
+
+        .app-card-top {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-bottom: 16px !important;
+        }
+
+        .app-card-icon-box {
+            width: 52px !important;
+            height: 52px !important;
+            border-radius: 14px !important;
+            background: #fef2f2 !important;
+            border: 1.5px solid #fee2e2 !important;
+            color: #dc2626 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.65rem !important;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08) !important;
+        }
+
+        .app-card-tag {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            color: #dc2626 !important;
+            background: #fff1f2 !important;
+            border: 1px solid #fecaca !important;
+            padding: 5px 12px !important;
+            border-radius: 99px !important;
+        }
+
+        .app-card-title {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 1.32rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em !important;
+            color: #0f172a !important;
+            margin: 0 0 10px !important;
+            line-height: 1.25 !important;
+        }
+
+        .app-card-desc {
+            font-size: 0.92rem !important;
+            color: #475569 !important;
+            line-height: 1.55 !important;
+            margin: 0 0 22px !important;
+            flex-grow: 1 !important;
+        }
+
+        .app-card-footer {
+            margin-top: auto !important;
+            padding-top: 14px !important;
+            border-top: 1px solid #f1f5f9 !important;
+        }
+
+        .app-card-btn {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            min-height: 48px !important;
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            font-family: 'IBM Plex Sans', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+            border-radius: 10px !important;
+            border: none !important;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .app-card:hover .app-card-btn {
+            background: #dc2626 !important;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4) !important;
+        }
+
+        /* ── General Calculator Modal Polish (Solid Opaque Medical Surface) ── */
+        #general-calc-modal {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
+            background: rgba(15, 23, 42, 0.78) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            display: none !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 20px !important;
+        }
+
+        #general-calc-modal.active {
+            display: flex !important;
+        }
+
+        .general-modal-content {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 20px !important;
+            box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.4) !important;
+            max-width: 1180px !important;
+            width: 95vw !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 28px 32px 32px !important;
+            position: relative !important;
+            animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .general-modal-header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-bottom: 22px !important;
+            padding-bottom: 18px !important;
+            border-bottom: 2px solid #f1f5f9 !important;
+        }
+
+        .general-modal-header-left {
+            display: flex !important;
+            align-items: center !important;
+            gap: 14px !important;
+        }
+
+        .general-modal-header-icon {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 12px !important;
+            background: #fee2e2 !important;
+            border: 1px solid #fecaca !important;
+            color: #dc2626 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.5rem !important;
+        }
+
+        .general-modal-header-title {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 1.45rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 0 3px !important;
+        }
+
+        .general-modal-header-sub {
+            font-size: 0.85rem !important;
+            color: #64748b !important;
+            font-weight: 500 !important;
+        }
+
+        .general-modal-close-btn {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #475569 !important;
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .general-modal-close-btn:hover {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #ef4444 !important;
+            transform: scale(1.05) !important;
+        }
+
+        /* Modal Internal Grid */
+        .general-modal-content .content {
+            display: grid !important;
+            grid-template-columns: 320px 1fr !important;
+            gap: 24px !important;
+            align-items: start !important;
+        }
+
+        .general-modal-content .input-section {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 14px !important;
+            padding: 22px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+            position: sticky !important;
+            top: 0 !important;
+        }
+
+        .general-modal-content .results-section {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 14px !important;
+            padding: 22px !important;
+            min-height: 480px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        /* ── Comprehensive Mobile Stabilization & Anti-Zoom ─────────────── */
+        html {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            touch-action: pan-y !important;
+            -webkit-text-size-adjust: 100% !important;
+            overscroll-behavior-x: none !important;
+        }
+
+        body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            touch-action: pan-y !important;
+            overscroll-behavior-x: none !important;
+        }
+
+        @media (max-width: 768px) {
+
+            /* 16px Font Lock to eliminate automatic zoom on iOS & Android Chrome */
+            input,
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+
+            /* Kill ALL horizontal touch/swipe on mobile */
+            *,
+            *::before,
+            *::after {
+                touch-action: pan-y !important;
+            }
+
+            input, select, textarea, [contenteditable] {
+                touch-action: manipulation !important;
+            }
+
+            /* Disable decorative animations for performance */
+            .aurora-bg,
+            .aurora-band,
+            .bg-orb,
+            .ecg-bg {
+                display: none !important;
+            }
+
+            body::before,
+            body::after {
+                display: none !important;
+            }
+
+            /* Disable hover transforms */
+            .app-card:hover,
+            .result-card:hover {
+                transform: none !important;
+            }
+
+            /* Full-screen clean mobile modals */
+            .modal-overlay,
+            #general-calc-modal,
+            #gdp-modal,
+            #cpb-hct-modal,
+            #zscore-modal {
+                padding: 0 !important;
+                align-items: stretch !important;
+                justify-content: stretch !important;
+                background: #0f172a !important;
+                overflow: hidden !important;
+                overscroll-behavior: none !important;
+            }
+
+            .modal-content,
+            .general-modal-content,
+            .pedz-card,
+            .gdp-container,
+            .cpb-hct-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 100vh !important;
+                min-height: 100dvh !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-height: 100vh !important;
+                max-height: 100dvh !important;
+                border-radius: 0 !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 16px 12px 60px !important;
+                box-sizing: border-box !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                overscroll-behavior-x: none !important;
+                overscroll-behavior-y: contain !important;
+            }
+
+            .general-modal-header {
+                padding-bottom: 12px !important;
+                margin-bottom: 16px !important;
+            }
+
+            .general-modal-header-title {
+                font-size: 1.15rem !important;
+            }
+
+            .general-modal-header-sub {
+                font-size: 0.75rem !important;
+            }
+
+            .general-modal-content .content {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            .general-modal-content .input-section {
+                position: static !important;
+                padding: 14px !important;
+            }
+
+            .general-modal-content .results-section {
+                padding: 14px !important;
+                min-height: auto !important;
+            }
+
+            /* Main Hub on Mobile */
+            .apps-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+            }
+
+            .app-card {
+                padding: 18px 16px !important;
+                border-radius: 14px !important;
+            }
+
+            .hub-patient-bar {
+                padding: 12px 14px !important;
+                margin-bottom: 18px !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .patient-bar-actions {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            .patient-bar-btn,
+            .patient-bar-btn-reset {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+
+            /* GDP Target Buttons */
+            .gdp-target-pill-row {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+
+            .gdp-target-btn {
+                border-radius: 8px !important;
+                min-height: 42px !important;
+                padding: 8px 6px !important;
+                font-size: 0.78rem !important;
+                text-align: center !important;
+                line-height: 1.25 !important;
+            }
+
+            .gdp-custom-pill {
+                grid-column: span 2 !important;
+                border-radius: 8px !important;
+                min-height: 42px !important;
+                justify-content: center !important;
+            }
+
+            .gdp-temp-preset-row {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 6px !important;
+            }
+
+            .gdp-temp-preset-btn {
+                border-radius: 6px !important;
+                padding: 8px 4px !important;
+                font-size: 0.76rem !important;
+                text-align: center !important;
+                min-height: 38px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aurora-bg" aria-hidden="true">
+        <span class="aurora-band aurora-band-1"></span>
+        <span class="aurora-band aurora-band-2"></span>
+        <span class="aurora-band aurora-band-3"></span>
+    </div>
+    <div class="ecg-bg" aria-hidden="true">
+        <canvas class="ecg-live-canvas"></canvas>
+    </div>
+
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
+    <div class="container">
+
+        <header>
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                Clinical Decision Support · v2.3
+            </div>
+            <h1>Perfusion<span class="title-accent">Pro</span> Suite</h1>
+            <p>Complete Circulatory Synchronization &nbsp;·&nbsp; <strong>Clinical Decision Support</strong></p>
+            <div class="header-line"></div>
+        </header>
+
+        <!-- Main Screen: 4-App Clinical Navigation Hub -->
+        <main class="hub-container">
+            <!-- Patient Status Quick-Bar -->
+            <div class="hub-patient-bar">
+                <div class="patient-bar-info">
+                    <span class="patient-bar-dot"></span>
+                    <span class="patient-bar-label">Patient Profile:</span>
+                    <span id="hub-patient-summary" class="patient-bar-values">No active patient metrics</span>
+                </div>
+                <div class="patient-bar-actions">
+                    <button type="button" class="patient-bar-btn" onclick="openGeneral()"
+                        title="Enter or edit patient metrics">
+                        ⚡ Enter Patient Metrics
+                    </button>
+                    <button type="button" class="patient-bar-btn-reset" onclick="resetAll()"
+                        title="Reset patient metrics">
+                        ↺ Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 Selectable Clinical Calculators Grid -->
+            <div class="apps-grid">
+                <!-- App 1: Perfusion Profile & Circuit Calculator -->
+                <div class="app-card" onclick="openGeneral()" role="button" tabindex="0"
+                    aria-label="Open Perfusion and Circuit Sizing Calculator">
+                    <div class="app-card-top">
+                        <div class="app-card-icon-box">🫀</div>
+                        <span class="app-card-tag">Core Triage</span>
+                    </div>
+                    <h2 class="app-card-title">Perfusion & Circuit Sizing</h2>
+                    <p class="app-card-desc">Patient initial triage, BSA calculations, Kirklin blood flow, oxygenator
+                        ratings, cannula sizing, and disease reference plan.</p>
+                    <div class="app-card-footer">
+                        <span class="app-card-btn">Open Calculator →</span>
+                    </div>
+                </div>
+
+                <!-- App 2: Pediatric Cardiac Z-Score Calculator -->
+                <div class="app-card" onclick="openZScore()" role="button" tabindex="0"
+                    aria-label="Open Pediatric Cardiac Z-Score Calculator">
+                    <div class="app-card-top">
+                        <div class="app-card-icon-box">📐</div>
+                        <span class="app-card-tag">Echocardiography</span>
+                    </div>
+                    <h2 class="app-card-title">Cardiac Z-Score</h2>
+                    <p class="app-card-desc">Comprehensive pediatric echo Z-scores for valves, chambers, and great
+                        vessels based on BSA with M-Mode reference ranges.</p>
+                    <div class="app-card-footer">
+                        <span class="app-card-btn">Open Calculator →</span>
+                    </div>
+                </div>
+
+                <!-- App 3: CPB Hematocrit Calculator -->
+                <div class="app-card" onclick="openCpbHct()" role="button" tabindex="0"
+                    aria-label="Open CPB Hematocrit Calculator">
+                    <div class="app-card-top">
+                        <div class="app-card-icon-box">🩸</div>
+                        <span class="app-card-tag">Fluid & Prime</span>
+                    </div>
+                    <h2 class="app-card-title">CPB Hematocrit Calculator</h2>
+                    <p class="app-card-desc">Pre-bypass blood volume, circuit prime dilution hematocrit, target on-pump
+                        Hct, and PRBC transfusion estimation.</p>
+                    <div class="app-card-footer">
+                        <span class="app-card-btn">Open Calculator →</span>
+                    </div>
+                </div>
+
+                <!-- App 4: GDP DO2i Calculator -->
+                <div class="app-card" onclick="openGdp()" role="button" tabindex="0"
+                    aria-label="Open Goal-Directed Perfusion Calculator">
+                    <div class="app-card-top">
+                        <div class="app-card-icon-box">🎯</div>
+                        <span class="app-card-tag">Real-Time DO₂</span>
+                    </div>
+                    <h2 class="app-card-title">GDP DO₂i Calculator</h2>
+                    <p class="app-card-desc">Goal-Directed Perfusion oxygen delivery index (DO₂i), consumption (VO₂i),
+                        delivery-to-demand ratio, and nadir thresholds.</p>
+                    <div class="app-card-footer">
+                        <span class="app-card-btn">Open Calculator →</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-line"></div>
+            <div class="profile-info">
+                <span class="profile-name">Zafeer ul Islam</span>
+                <span class="divider">·</span>
+                <span class="profile-role">Clinical Perfusion Sciences Student · The Children's Hospital, Lahore</span>
+            </div>
+            <div class="copyright">© 2026 Zafeer ul Islam · All rights reserved · For educational use only</div>
+        </footer>
+
+    </div>
+
+    <!-- General Calculator Modal Overlay (Positioned at body root for full-screen backdrop) -->
+    <div id="general-calc-modal" class="modal-overlay">
+        <div class="modal-content general-modal-content">
+            <div class="general-modal-header">
+                <div class="general-modal-header-left">
+                    <div class="general-modal-header-icon">🫀</div>
+                    <div>
+                        <h2 class="general-modal-header-title">Perfusion & Circuit Sizing</h2>
+                        <span class="general-modal-header-sub">Patient Initial Triage, Hemodynamics & Circuit
+                            Sizing</span>
+                    </div>
+                </div>
+                <button type="button" class="general-modal-close-btn" onclick="closeGeneral()"
+                    title="Close Calculator">✕</button>
+            </div>
+            <div class="content">
+                <!-- LEFT: INPUT -->
+                <section class="input-section glass-panel">
+                    <div class="section-title">
+                        <span class="section-icon">⬡</span> Patient Input
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-with-help">
+                            <label for="weight">Weight <span class="unit-tag">kg</span> <span
+                                    class="required">✱</span></label>
+                            <button class="help-btn" data-flip="weight-help">?</button>
+                        </div>
+                        <div class="input-wrap">
+                            <input type="number" id="weight" step="0.1" min="0.5" max="150" placeholder="0.0">
+                        </div>
+                        <div class="flip-card" id="weight-help">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">Patient body weight in kilograms</div>
+                                <div class="flip-card-back">Essential for calculating BSA and perfusion flow rates</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-with-help">
+                            <label for="height">Height <span class="unit-tag">cm</span> <span
+                                    class="optional-tag">optional</span></label>
+                            <button class="help-btn" data-flip="height-help">?</button>
+                        </div>
+                        <div class="input-wrap">
+                            <input type="number" id="height" step="0.1" min="30" max="220" placeholder="0.0">
+                        </div>
+                        <div class="field-hint" id="bsa-formula-hint">Formula: Weight-only (Simplified)</div>
+                        <div class="flip-card" id="height-help">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">Patient height in centimeters</div>
+                                <div class="flip-card-back">Optional - used for more accurate BSA calculation</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-with-help">
+                            <label for="age">Age <span class="required">✱</span></label>
+                            <button class="help-btn" data-flip="age-help">?</button>
+                        </div>
+                        <div class="age-row">
+                            <div class="input-wrap" style="flex:1">
+                                <input type="number" id="age" step="1" min="0" max="18" placeholder="0">
+                            </div>
+                            <select id="age-unit">
+                                <option value="years">Years</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                        <div class="field-hint" id="age-hint">Enter 0 for neonates</div>
+                        <div class="flip-card" id="age-help">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">Patient age in years or months</div>
+                                <div class="flip-card-back">Critical for age-specific perfusion protocols and z-score
+                                    calculations</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-with-help">
+                            <label for="disease-input">Disease <span class="optional-tag">search</span></label>
+                            <button class="help-btn" data-flip="disease-help">?</button>
+                        </div>
+                        <div class="input-wrap disease-picker-wrap">
+                            <input type="text" id="disease-input" placeholder="Type to search disease"
+                                autocomplete="off" spellcheck="false">
+                            <button type="button" id="disease-toggle" class="disease-toggle"
+                                aria-label="Show disease list">▾</button>
+                            <div id="disease-dropdown" class="disease-dropdown" role="listbox"
+                                aria-label="Disease options">
+                            </div>
+                        </div>
+                        <div class="field-hint" id="disease-hint">Type a disease name and choose from the suggestions.
+                        </div>
+                        <div class="flip-card" id="disease-help">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">Searchable disease reference</div>
+                                <div class="flip-card-back">Select a disease to show the summary, details, and
+                                    treatment-plan card in the output panel.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="status" class="status">
+                        <span class="status-dot"></span>
+                        Awaiting input...
+                    </div>
+
+                    <button id="reset-btn" class="reset-btn" onclick="resetAll()">↺ Reset All Fields</button>
+                </section>
+
+                <!-- RIGHT: RESULTS -->
+                <section class="results-section">
+                    <div class="section-title">
+                        <span class="section-icon">⬡</span> Results Dashboard
+                    </div>
+                    <div id="results-container">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 60 60" fill="none" width="56" height="56">
+                                    <circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="1"
+                                        stroke-dasharray="4 3" opacity="0.3" />
+                                    <path d="M20 30 Q30 18 40 30 Q30 42 20 30Z" stroke="currentColor" stroke-width="1.5"
+                                        fill="none" opacity="0.5" />
+                                    <circle cx="30" cy="30" r="3" fill="currentColor" opacity="0.4" />
+                                </svg>
+                            </div>
+                            <p>Enter patient data to generate<br>the complete perfusion profile.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="modules/bsa.js"></script>
+    <script src="modules/bloodflow.js"></script>
+    <script src="modules/oxygenator.js"></script>
+    <script src="modules/cannula.js"></script>
+    <script src="modules/kirklin.js"></script>
+    <script src="modules/valvesize.js"></script>
+    <script src="modules/pedz-bsa.js"></script>
+    <script src="modules/pedz-zscore.js"></script>
+    <script src="modules/pedz-common.js"></script>
+    <script src="modules/pedz-mmode.js"></script>
+    <script src="modules/pedz-app.js"></script>
+    <script src="modules/cpbHct.js?v=2.1"></script>
+    <script src="modules/gdp.js?v=2.6"></script>
+    <script src="modules/diseases.js"></script>
+    <script src="main.js?v=5.0"></script>
+    <script src="ecg-background.js?v=4.0"></script>
+    <script src="pwa-manager.js?v=1.0"></script>
+</body>
+
+</html>
